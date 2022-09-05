@@ -1,0 +1,56 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push only for the "main" branch or pull request events 
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check-out repository
+        uses: actions/checkout@v3
+        with:
+          # CommitLint: fetch all commits
+          fetch-depth: 0
+        
+      - name: Install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: yarn install
+
+      # yarn lint in package.json: eslint . --ext .ts,.tsx
+      - name: Check eslint
+        run: yarn lint
+        
+      # CommitLint: 
+      - name: Check commit message
+        uses: wagoid/commitlint-github-action@v5
+
+      # Codecov
+      - name: Check coverage tests
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          files: ./coverage1.xml,./coverage2.xml # optional
+          flags: unittests # optional
+          name: codecov-umbrella # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
